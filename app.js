@@ -111,18 +111,16 @@ app.post('/placeOrder', async (req, res) => {
 })
 
 //getting orders
-app.get('/viewOrder', (req, res) =>{
-    let email = req.query.email
-    let query = {};
-    if (email) {
-        query={email: email}
+app.get('/viewOrder/:email', (req, res) =>{
+    if (req.params.email) {
+        db.collection('orders').find({email: req.params.email}).toArray((err, result) => {
+            if(err) throw err;
+            res.send(result)
+        })
     } else {
-        query={}
+        console.log('no orders found ', req.params.email);
+        res.send("no orders found")
     }
-    db.collection('orders').find(query).toArray((err, result) => {
-        if(err) throw err;
-        res.send(result)
-    })
 })
 
 //update order
@@ -153,9 +151,9 @@ app.delete('/deleteOrder/:deleteId', (req, res) => {
 })
 
 //connect with mongodb
-MongoClient.connect(mongoURL, {useNewUrlParser: true, useUnifiedTopology: true}, (err, connectedClient) => {
+MongoClient.connect(mongoURL, {useNewUrlParser: true, useUnifiedTopology: true}, (err, client) => {
     if (err) console.log('Error while connecting to Mongo');
-    db = connectedClient.db('myntra_clone');
+    db = client.db('myntra_clone');
     app.listen(port, () => {
         console.log('Server is running on port ' + port);
     })
